@@ -21,27 +21,8 @@ import sqlite3
 from datetime import datetime
 import importlib
 
-# ================= 依赖热加载 =================
-def ensure_dependencies():
-    missing = []
-    for pkg in ['pandas', 'openpyxl']:
-        try:
-            importlib.import_module(pkg)
-        except ImportError:
-            missing.append(pkg)
-    if missing:
-        st.info(f"正在自动安装必要组件 ({', '.join(missing)})... 请稍候。")
-        subprocess.check_call(["pip", "install", *missing])
-        st.success("组件安装完成！")
-
-ensure_dependencies()
-import pandas as pd
-# ==============================================
-
-load_dotenv()
-
-# ================= UI 全局高级美化配置 =================
-st.set_page_config(page_title="AI 试卷排版大师 v2.9", layout="wide", page_icon="📝")
+# ================= 极其重要：页面配置必须是第一个执行的 Streamlit 指令 =================
+st.set_page_config(page_title="AI 试卷排版大师 v2.9.1", layout="wide", page_icon="📝")
 
 st.markdown("""
 <style>
@@ -62,7 +43,26 @@ st.markdown("""
     [data-testid="stFileUploadDropzone"] button::after { content: "浏览本地文件"; color: currentColor; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-weight: 400; }
 </style>
 """, unsafe_allow_html=True)
-# =======================================================
+# =======================================================================================
+
+# ================= 依赖热加载 (放在 UI 配置之后) =================
+def ensure_dependencies():
+    missing = []
+    for pkg in ['pandas', 'openpyxl']:
+        try:
+            importlib.import_module(pkg)
+        except ImportError:
+            missing.append(pkg)
+    if missing:
+        st.info(f"正在自动安装必要组件 ({', '.join(missing)})... 请稍候。")
+        subprocess.check_call(["pip", "install", *missing])
+        st.success("组件安装完成！")
+
+ensure_dependencies()
+import pandas as pd
+# ==============================================================
+
+load_dotenv()
 
 DATA_DIR = "/app/data"
 IMAGE_DIR = os.path.join(DATA_DIR, "images")
@@ -111,7 +111,7 @@ if 'section_order' not in st.session_state:
     st.session_state.section_order = []
 
 with st.sidebar:
-    st.image("https://img.shields.io/badge/AI%20排版引擎-v2.9%20Pro-blue?style=for-the-badge", use_column_width=True)
+    st.image("https://img.shields.io/badge/AI%20排版引擎-v2.9.1%20Pro-blue?style=for-the-badge", use_column_width=True)
     st.header("🗄️ 树状题库与收藏")
     tag_search = st.text_input("🔍 搜标签 (如: 建筑材料/第一章)", placeholder="输入知识点标签搜索库中试题")
     if st.button("从本地库拉取至手术台"):
@@ -139,7 +139,7 @@ with st.sidebar:
             st.code(f"[图片:{safe_name}]", language="text")
 
 st.title("📝 建筑材料教务系统 - 全能排版矩阵")
-st.caption("✨ v2.9：国标级括弧排版间距 | 智能题型归一化 | 终极洗白防丢")
+st.caption("✨ v2.9.1：核心引擎时序修复 | 纯净组件热加载")
 
 def normalize_type(raw_type):
     t = str(raw_type).lower()
@@ -421,10 +421,9 @@ def generate_word_direct(sections, show_answer, paper_size, meta_info):
                 set_run_font(run_prefix, '宋体', 12)
                 set_run_font(p_q.add_run("（"), '宋体', 12)
                 if show_answer and ans_text:
-                    # ================= V2.9 扩宽括号内部的答案预留空间 =================
                     run_ans = p_q.add_run(f"  {ans_text}  "); set_run_font(run_ans, '宋体', 12, bold=True, color=RGBColor(255, 0, 0))
                 else: 
-                    p_q.add_run("      ") # 从 3 个空格加长到了 6 个空格，符合排版国标
+                    p_q.add_run("      ")
                 set_run_font(p_q.add_run("）"), '宋体', 12)
                 if clean_text[end:]: set_run_font(p_q.add_run(clean_text[end:]), '宋体', 12)
             else:
@@ -433,7 +432,7 @@ def generate_word_direct(sections, show_answer, paper_size, meta_info):
                 if show_answer and ans_text:
                     run_ans = p_q.add_run(f"  {ans_text}  "); set_run_font(run_ans, '宋体', 12, bold=True, color=RGBColor(255, 0, 0))
                 else: 
-                    p_q.add_run("      ") # 从 3 个空格加长到了 6 个空格，符合排版国标
+                    p_q.add_run("      ")
                 set_run_font(p_q.add_run("）"), '宋体', 12)
         else:
             set_run_font(p_q.add_run(f"{q_id}. {clean_text}"), '宋体', 12)
